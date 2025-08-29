@@ -10,11 +10,16 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
+            SwiftUI.Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
         }
+        .onAppear(perform: {
+            Task {
+                let dogs = await Requester().getDogs()
+            }
+        })
         .padding()
     }
 }
