@@ -23,7 +23,7 @@ struct DogsRequester {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             print(String(data: data, encoding: .utf8) ?? "")
-            let httpResponse = response as! HTTPURLResponse
+//            let httpResponse = response as! HTTPURLResponse
             
             let decoded = try JSONDecoder().decode([Dog].self, from: data)
             return decoded
@@ -36,29 +36,56 @@ struct DogsRequester {
 import UIKit
 
 enum ImageStatus {
-    case inProgress(task: Task<UIImage, Error>)
-    case completed(image: UIImage)
+    case inProgress(Task<UIImage, Error>)
+    case completed(UIImage)
 }
 
+/// Either gives a failed Image or Good image.
+/// Loading state is managed by the view. This is because each view may have a different loading state. (I suppose you could say the same for_failed_ image too. But Loading isn't a response. It's more of an initial state. So that's why I'm keeping them separate...
 actor ImageRequester {
     
+    private init() {}
+    
+    /// this to avoid having duplicate cache objects in memory. We should cache the in-memory object **only** once
+    static let shared = ImageRequester()
+    
     static let failedImage = UIImage()
-    static let loadingImage = UIImage()
     
     var cache: [URL: ImageStatus] = [:]
-    func getImage(_ url: URL) async -> ImageStatus {
+    func getImage(_ url: URL) async -> UIImage {
+        var currentTask: Task<UIImage, Error>?
         
         switch cache[url] {
         case .none:
-            cache[url] = .inProgress(task: <#T##Task<UIImage, any Error>#>)
-            do {
-                let (data, response) = try await URLSession.shared.data(from: url)
-            } catch let error {
-                
+            currentTask = Task<UIImage, Error> {
+                do {
+                    let (data, _) = try await URLSession.shared.data(from: url)
+                    return UIImage(data: data) ?? ImageRequester.failedImage
+                } catch {
+                    return ImageRequester.failedImage
+                }
+            }
+            currentTask.map {
+                cache[url] = .inProgress($0)
             }
         case .some(let status):
+            switch status {
+            case .inProgress(let task):
+                currentTask = task
+                
+            case .completed(let image):
+                return image
+            }
         }
-        return .completed(image: ImageRequester.loadingImage)
+        guard let currentTask else {
+            return ImageRequester.failedImage
+        }
+        do {
+            let image = try await currentTask.value
+            return image
+        } catch {
+            return ImageRequester.failedImage
+        }
     }
 }
 
