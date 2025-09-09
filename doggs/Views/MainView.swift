@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct MainView: View {
-    @State var isLoading = true
-    @State var dogs: [Dog] = []
-    @State var selectedDog: Dog?
+    @State private var searchText = ""
+    @State private var isLoading = true
+    @State private var breeds: [Breed] = []
+    @State private var selectedBreed: Breed?
     
     var body: some View {
         
@@ -19,27 +20,30 @@ struct MainView: View {
                 if isLoading {
                     ProgressView("Loading...")
                 } else {
-                    List(dogs, selection: $selectedDog) {
-                        DogRowView(dog: $0)
+                    List(breeds, id: \.self, selection: $selectedBreed) {
+                        BreedRowView(breed: $0)
                     }
                 }
             }
-            .onChange(of: selectedDog) { _, newValue in
-                print("Selected dog: \(newValue?.id ?? "none")")
+            .onChange(of: selectedBreed) { _, newValue in
+                print("Selected dog: \(newValue?.id ?? 10)")
             }
-            .navigationTitle("Dogs")
+            .navigationTitle("Breeds")
             .onAppear(perform: {
                 Task {
-                    dogs = await DogsRequester().getDogs(limit: 40)
+                    breeds = await BreedsRequester().getBreeds(limit: 40)
                     isLoading = false
                 }
             })
             .padding()
         } detail: {
-            selectedDog.map {
-                Text($0.id)
+            if let selectedBreed {
+                Text(selectedBreed.name ?? "no name")
+                Text(selectedBreed.temperament ?? "normie")
             }
         }
+        .searchable(text: $searchText, prompt: "Search for a resort")
+
     }
 }
 

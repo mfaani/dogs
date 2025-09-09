@@ -15,13 +15,20 @@ struct Dog: Codable, Identifiable, Hashable {
 }
 
 // MARK: - Breed
-struct Breed: Codable, Hashable {
+struct Breed: Codable, Hashable, Identifiable {
+    struct Image: Codable, Hashable, Identifiable {
+        let url: String
+        let id: String
+    }
+    
     let id: Int
+    let image: Image
     let name, bredFor, breedGroup, lifeSpan: String?
     let temperament, referenceImageID: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name
+        case image
         case bredFor = "bred_for"
         case breedGroup = "breed_group"
         case lifeSpan = "life_span"

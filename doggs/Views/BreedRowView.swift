@@ -7,20 +7,10 @@
 
 import SwiftUI
 
-var dogNames = ["Hunter", "Dexter", "Bugzy", "Hippo", "Al", "Rex", "Deep", "Happy", "Thump"]
-
-struct DogViewModel {
-    let dog: Dog
-    
-    var name: String {
-        dogNames.randomElement() ?? "Hunter"
-    }
-}
-
 /// Note: Can't use `Dog` model directly, because it requires a URL. Or maybe I can? 🤔
-struct DogRowView: View {
+struct BreedRowView: View {
     @State var uiimage: UIImage?
-    let dog: Dog
+    let breed: Breed
     var body: some View {
         HStack {
             if let uiimage {
@@ -37,18 +27,18 @@ struct DogRowView: View {
                     .frame(width: 50, height: 50)
             }
             
-            Text(dog.breeds.first?.breedGroup ?? "BGroup")
+            Text(breed.name ?? "name")
         }
         .onAppear {
             Task {
-                uiimage = await ImageRequester.shared.getImage(URL(string: dog.url)!)
+                uiimage = await ImageRequester.shared.getImage(URL(string: breed.image.url)!)
             }
         }
     }
 }
 
 #Preview {
-    DogRowView(dog: Dog(breeds: [Breed(id: 1, name: "breed2", bredFor: "bfor", breedGroup: "Guard", lifeSpan: "22", temperament: "angry", referenceImageID: "id")], id: "aaa", url: "aabc", width: 400, height: 600))
+    BreedRowView(breed: Breed(id: 1, image: Breed.Image(url: "https://i.sstatic.net/E45djvOZ.jpg?s=256", id: "mfaani"), name: "breed2", bredFor: "bfor", breedGroup: "Guard", lifeSpan: "22", temperament: "angry", referenceImageID: "id"))
 }
 
 /*

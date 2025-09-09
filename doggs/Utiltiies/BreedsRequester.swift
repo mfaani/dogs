@@ -8,24 +8,24 @@
 import Foundation
 
 
-struct DogsRequester {
+struct BreedsRequester {
     static let apiKey = "live_LdiwWVr6KQ8wxQ8wjX1qMWpxFqx35QN1NkQn44pWVctuBSnmuzroHR0ayHYrfmFA"
-    func getDogs(limit: Int = 20) async -> [Dog] {
+    func getBreeds(limit: Int = 20) async -> [Breed] {
         // URL
         let urlString = "https://api.thedogapi.com/v1/images/search?limit=\(limit)"
-        guard let url = URL(string: urlString) else {
+        let breedsURLString = "https://api.thedogapi.com/v1/breeds?api_key=\(BreedsRequester.apiKey)"
+        guard let url = URL(string: breedsURLString) else {
             return []
         }
         
         var request = URLRequest(url: url)
-        request.setValue(DogsRequester.apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue(BreedsRequester.apiKey, forHTTPHeaderField: "x-api-key")
         
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, _) = try await URLSession.shared.data(for: request)
             print(String(data: data, encoding: .utf8) ?? "")
-//            let httpResponse = response as! HTTPURLResponse
             
-            let decoded = try JSONDecoder().decode([Dog].self, from: data)
+            let decoded = try JSONDecoder().decode([Breed].self, from: data)
             return decoded
         } catch let error {
             print(error)
