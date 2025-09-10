@@ -10,7 +10,15 @@ import SwiftUI
 struct MainView: View {
     @State private var searchText = ""
     @State private var isLoading = true
+    
     @State private var breeds: [Breed] = []
+    private var filteredBreeds: [Breed] {
+        if searchText.isEmpty {
+            breeds
+        } else {
+            breeds.filter { ($0.name ?? "").localizedStandardContains(searchText) }
+        }
+    }
     @State private var selectedBreed: Breed?
     
     var body: some View {
@@ -20,7 +28,7 @@ struct MainView: View {
                 if isLoading {
                     ProgressView("Loading...")
                 } else {
-                    List(breeds, id: \.self, selection: $selectedBreed) {
+                    List(filteredBreeds, id: \.self, selection: $selectedBreed) {
                         BreedRowView(breed: $0)
                     }
                 }
